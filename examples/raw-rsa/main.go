@@ -25,20 +25,16 @@ func main() {
 	fmt.Println("Generating files...")
 	fileGen(dataFilename, tagFilename, chunkSize, blockCount)
 
-	fmt.Println("Running DHDD:")
+	trackDuration("DHDD", runDHDD)
+	trackDuration("HTRM", runHTRM)
+	trackDuration("One by one", runOneByOne)
+}
+
+func trackDuration(name string, f func() bool) {
+	fmt.Println("Running " + name + ":")
 	start := time.Now()
-	fmt.Println(runDHDD())
-	fmt.Printf("%v: %v\n", "DHDD", time.Since(start))
-
-	fmt.Println("Running HTRM:")
-	start = time.Now()
-	fmt.Println(runHTRM())
-	fmt.Printf("%v: %v\n", "HTRM", time.Since(start))
-
-	fmt.Println("Running one by one:")
-	start = time.Now()
-	fmt.Println(runOneByOne())
-	fmt.Printf("%v: %v\n", "One by one", time.Since(start))
+	fmt.Printf("Result: %v\n", f())
+	fmt.Printf("%v: %v\n", name, time.Since(start))
 }
 
 func runDHDD() bool {
