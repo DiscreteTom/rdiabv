@@ -14,7 +14,7 @@
 
 不过，云存储提供商也需要验证用户上传的数据块和标签是否匹配，防止用户诬陷自己“没有正确保存数据”。所以云存储提供商需要一个高效的验证手段来对数据块、标签进行验证。反向数据完整性验证：云存储提供商可以验证用户上传的数据是否正确。
 
-此项目提供了两个方案：高次随机合并(HTRM)方案和动态高维防御(DHDD)方案。只要原本的非对称加密算法是同态的（比如RSA），这两个方案就可以通过合并数据块、标签来大幅度减少验证时间，并能以极高的准确率检测出合并数据块时可能出现的补偿攻击。
+此项目提供了两个方案：高次随机合并(HTRM)方案和动态高维防御(DHDD)方案。只要原本的非对称加密算法是同态的（比如RSA），这两个方案就可以通过合并数据块、标签来大幅度减少验证时间，并能以极高的准确率检测出合并数据块时可能出现的补偿攻击。论文中已经证明，这两个方案可以应用在基于RSA的S-PDP和基于BLS的POR上。
 
 ## 安装
 
@@ -109,7 +109,7 @@ One way to solve this problem is to split the files into many data blocks, and u
 
 But the cloud storage provider also need to validate whether the data and tags are matched when users upload their files to prevent the users cheat them and upload mismatch data and tags. The cloud storage provider needs an efficient way to validate all the data and tags. Reverse data integrity auditing: the cloud storage provider can validate whether the data and tags are matched when users upload their files.
 
-This project provides two methods to accelerate reverse data integrity auditing: High-Times Random Merging(HTRM) and Dynamic High-Dimensional Defense(DHDD). As long as the original encryption algorithm is homomorphic(for example, RSA), these two methods can reduce the validation time by merging data and tags, and detect complementation attack with a very high accuracy.
+This project provides two methods to accelerate reverse data integrity auditing: High-Times Random Merging(HTRM) and Dynamic High-Dimensional Defense(DHDD). As long as the original encryption algorithm is homomorphic(for example, RSA), these two methods can reduce the validation time by merging data and tags, and detect complementation attack with a very high accuracy. In the thesis paper we have proved that, these two methods can apply to RSA based S-PDP(Secure Provable Data Possession) and BLS based POR(Proofs of Retrievability).
 
 ## Installation
 
