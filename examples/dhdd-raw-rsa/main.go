@@ -13,7 +13,7 @@ import (
 
 const rsaKeyBits = 4096
 const chunkSize = 256 // Byte count of a block's data field.
-const blockCount = 59049
+const blockCount = 1024
 const dataFilename = "data.bin"
 const tagFilename = "tag.txt"
 
