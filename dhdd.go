@@ -4,6 +4,9 @@ import (
 	"math/rand"
 )
 
+// ValuePerDimension defines how many possible values every dimension has.
+const ValuePerDimension = 3
+
 // DHDD is a struct for DHDD algorithm.
 type DHDD struct {
 	dimension                   int           // Equals the x in the paper.
@@ -30,7 +33,7 @@ func (dhdd *DHDD) getDimensionAndLogicalBlockNum(n int) {
 	dhdd.logicalBlockNum = 1
 	for {
 		if dhdd.logicalBlockNum < n {
-			dhdd.logicalBlockNum *= 3
+			dhdd.logicalBlockNum *= ValuePerDimension
 			dhdd.dimension++
 		} else {
 			break
@@ -57,12 +60,12 @@ func (dhdd *DHDD) generateBlockIndexToLogicalPosition(seed int64) {
 func (dhdd *DHDD) InitBuffers(block Block) *DHDD {
 	dhdd.buffers = make([][]Block, dhdd.dimension)
 	for i := 0; i < dhdd.dimension; i++ {
-		dhdd.buffers[i] = make([]Block, 3)
+		dhdd.buffers[i] = make([]Block, ValuePerDimension)
 
 		// init buffers
-		dhdd.buffers[i][0] = block.Copy() // copy value
-		dhdd.buffers[i][1] = block.Copy()
-		dhdd.buffers[i][2] = block.Copy()
+		for j := 0; j < ValuePerDimension; j++ {
+			dhdd.buffers[i][j] = block.Copy() // copy value
+		}
 	}
 	return dhdd
 }
@@ -77,8 +80,8 @@ func (dhdd *DHDD) MergeBlock(index int, block Block) {
 
 // CheckAllBuffers will check all buffers whether the data field matches the tag field
 func (dhdd *DHDD) CheckAllBuffers() bool {
-	for i := 0; i < len(dhdd.buffers); i++ {
-		for j := 0; j < len(dhdd.buffers[i]); j++ {
+	for i := 0; i < dhdd.dimension; i++ {
+		for j := 0; j < ValuePerDimension; j++ {
 			if dhdd.buffers[i][j].Validate() == false {
 				return false
 			}
