@@ -89,7 +89,7 @@ This project is a POC implementation of my [bachelor thesis](https://discretetom
 
 For example, if we store our files on Google Drive and delete the local copy, how can we know whether our files were modified on the cloud?
 
-One way to solve this problem is to split the files into many data blocks, and use asymmetric encryption methods to encrypt the data blocks to get the "tags" of each data block, then store both the data and tags on the cloud, and publish the public key. Anyone else can not generate tags for blocks since they do not have the private key, bu anyone(including the data owner) can validate whether the tags match the data, and know whether the files are modified. Forward data integrity auditing: users can validate whether the data on the cloud is correctly stored.
+One way to solve this problem is to split the files into many data blocks, and use asymmetric encryption methods to encrypt the data blocks to get the "tags" of each data block, then store both the data and tags on the cloud, and publish the public key. Anyone else can not generate tags for blocks since they do not have the private key, but anyone(including the data owner) can validate whether the tags match the data, and know whether the files are modified. Forward data integrity auditing: users can validate whether the data on the cloud is correctly stored.
 
 But the cloud storage provider also need to validate whether the data and tags are matched when users upload their files to prevent the users cheat them and upload mismatch data and tags. The cloud storage provider needs an efficient way to validate all the data and tags. Reverse data integrity auditing: the cloud storage provider can validate whether the data and tags are matched when users upload their files.
 
@@ -150,7 +150,7 @@ func main(){
 
 ## Performance
 
-Using textbook RSA as the test algorithm(the source code is available in `examples/dhdd-raw-rsa`), with the length of the RSA key pair 4096, block data length 256 Bytes, using `go run` command to test. The results are as follows:
+Using textbook RSA as the test algorithm(the source code is available in `examples/dhdd-raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows:
 
 | Block Count | Time Consumption of Check One by One | Time Consumption of DHDD | Dimension of DHDD |
 | --- | --- | --- | --- |
