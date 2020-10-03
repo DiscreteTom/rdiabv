@@ -35,7 +35,11 @@ type MyBlock struct {
 
 // 拷贝数据块。用来初始化合并缓冲区
 func (block *MyBlock) Copy() rdiabv.Block {
-	...
+	copied := &MyBlock{}
+
+	... // 从block复制值
+	
+	return copied
 }
 
 // 判断数据块是否合法
@@ -45,7 +49,13 @@ func (block *MyBlock) Validate() (ret bool) {
 
 // 定义如何合并两个数据块
 func (block *MyBlock) Merge(x rdiabv.Block, y rdiabv.Block) rdiabv.Block {
-	...
+	// 类型转换
+	blockX, _ := x.(*MyBlock)
+	blockY, _ := y.(*MyBlock)
+	
+	... // 合并blockX & blockY到block
+	
+	return block
 }
 ```
 
@@ -53,33 +63,39 @@ func (block *MyBlock) Merge(x rdiabv.Block, y rdiabv.Block) rdiabv.Block {
 
 ```go
 func main(){
-	// 初始化算法
-	dhdd := rdiabv.NewDHDD(blockCount, time.Now().UnixNano()).
+	// 使用DHDD
+	validator := rdiabv.NewDHDD(blockCount, time.Now().UnixNano()).
 		InitBuffers(&MyBlock{}) // 合并缓冲区会复制此数据块作为初始值
+	
+	// 使用HTRM
+	// validator := rdiabv.NewHTRM(times).
+		// InitBuffers(&MyBlock{}) // 合并缓冲区会复制此数据块作为初始值
 
 	// 合并所有数据块
 	for i := 0; i < blockCount; i++ {
 		block := MyBlock{}
 		... // 构建数据块
-		dhdd.MergeBlock(i, &block)
+		validator.MergeBlock(i, &block)
 	}
 
 	// 验证所有缓冲区中的数据域和标签域是否匹配
-	dhdd.CheckAllBuffers()
+	validator.CheckAllBuffers()
 }
 ```
 
 ## 性能
 
-使用教科书RSA算法进行测试（源码位于`examples/dhdd-raw-rsa`），RSA密钥长度4096 bit，数据块大小256 Byte，使用`go run`命令进行测试，性能如下：
+使用教科书RSA算法进行测试（源码位于`examples/raw-rsa`），RSA密钥长度4096 bit，数据块大小256 Byte，使用`go run`命令进行测试，参考性能如下：
 
-| 数据块数量 | 逐个验证耗时 | DHDD耗时 | DHDD维度 |
-| --- | --- | --- | --- |
-| 1024 | 44.6 s | 906 ms | 7 |
-| 10000 | 7 m 56 s | 6.4 s | 9 |
-| 59049 | 44 m 12 s | 20 s | 10 |
+| 数据块数量 | 逐个验证耗时 | DHDD耗时 | DHDD维度 | HTRM耗时 | HTRM次数 |
+| --- | --- | --- | --- | --- | --- |
+| 1024 | 44.4 s | 977 ms | 7 | 2.7 s | 15 |
+| 10000 | 7 m 10 s | 4.5 s | 9 | 6.8 s | 15 |
+| 59049 | 42 m 3 s | 21.2 s | 10 | 29.3 s | 15 |
 
-> 令DHDD维度为`x`，则DHDD防御失败的概率为`(5/27)**x`。维度为10时，DHDD防御失败的概率约等于中国国内中奖概率最低的大乐透中奖（约2142万分之一）。
+> 令DHDD维度为`x`，则DHDD防御失败的概率为`(5/27)**x`。维度为10时，DHDD防御失败的概率约等于中国国内中奖概率最低的大乐透中奖（约1/21420000）。
+
+> 令HTRM次数为`n`，则HTRM防御失败的概率为`1/3**n`。次数为15时，HTRM防御失败的概率约为1/14350000。
 
 # English
 
@@ -114,7 +130,11 @@ type MyBlock struct {
 
 // Copy the current block. This is used to init DHDD buffers.
 func (block *MyBlock) Copy() rdiabv.Block {
-	...
+	copied := &MyBlock{}
+	
+	... // copy fields from block
+
+	return copied
 }
 
 // Check whether the data and tags of a block are matched.
@@ -124,7 +144,13 @@ func (block *MyBlock) Validate() (ret bool) {
 
 // Define how to merge two blocks.
 func (block *MyBlock) Merge(x rdiabv.Block, y rdiabv.Block) rdiabv.Block {
-	...
+	// type assertion
+	blockX, _ := x.(*MyBlock)
+	blockY, _ := y.(*MyBlock)
+
+	... // merge blockX & blockY to block
+
+	return block
 }
 ```
 
@@ -132,30 +158,36 @@ The workflow of the main process:
 
 ```go
 func main(){
-	// Initialize DHDD
-	dhdd := rdiabv.NewDHDD(blockCount, time.Now().UnixNano()).
+	// Using DHDD
+	validator := rdiabv.NewDHDD(blockCount, time.Now().UnixNano()).
 		InitBuffers(&MyBlock{}) // Buffers will copy the value of the parameter block.
+	
+	// Using HTRM
+	// validator := rdiabv.NewHTRM(times).
+	// 	InitBuffers(&MyBlock{}) // Buffers will copy the value of the parameter block.
 
 	// Merge all blocks.
 	for i := 0; i < blockCount; i++ {
 		block := MyBlock{}
 		... // construct your block
-		dhdd.MergeBlock(i, &block)
+		validator.MergeBlock(i, &block)
 	}
 
 	// Check all buffers whether the data and tags are matched.
-	dhdd.CheckAllBuffers()
+	validator.CheckAllBuffers()
 }
 ```
 
 ## Performance
 
-Using textbook RSA as the test algorithm(the source code is available in `examples/dhdd-raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows:
+Using textbook RSA as the test algorithm(the source code is available in `examples/raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows:
 
-| Block Count | Time Consumption of Check One by One | Time Consumption of DHDD | Dimension of DHDD |
-| --- | --- | --- | --- |
-| 1024 | 44.6 s | 906 ms | 7 |
-| 10000 | 7 m 56 s | 6.4 s | 9 |
-| 59049 | 44 m 12 s | 20 s | 10 |
+| Block Count | Time Consumption of Check One by One | Time Consumption of DHDD | Dimension of DHDD | Time Consumption of HTRM | HTRM Times |
+| --- | --- | --- | --- | --- | --- |
+| 1024 | 44.4 s | 977 ms | 7 | 2.7 s | 15 |
+| 10000 | 7 m 10 s | 4.5 s | 9 | 6.8 s | 15 |
+| 59049 | 42 m 3 s | 21.2 s | 10 | 29.3 s | 15 |
 
-> Assume that the dimension of DHDD is `x`, then the probability of DHDD failed to detect the complementation attack is `(5/27)**x`. If `x == 10`, this probability are like 1/21420000.
+> Assume that the dimension of DHDD is `x`, then the probability of DHDD failed to detect the complementation attack is `(5/27)**x`. If `x == 10`, this probability is about `1/21420000`.
+
+> Assume that the times of HTRM is `n`, then the probability of HTRM failed to detect the complementation attack is `1/3**n`. If `n == 15`, this probability is about `1/14350000`.
