@@ -110,7 +110,7 @@ func runHTRM() bool {
 		// for tag file, read a line
 		scanner.Scan()
 		block.Tag, _ = new(big.Int).SetString(scanner.Text(), 10)
-		htrm.MergeBlock(i, &block)
+		htrm.MergeBlock(&block)
 	}
 
 	fmt.Println("Checking...")

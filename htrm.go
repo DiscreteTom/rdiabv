@@ -37,7 +37,7 @@ func (htrm *HTRM) InitBuffers(block Block) *HTRM {
 }
 
 // MergeBlock will merge the given block to buffers many times.
-func (htrm *HTRM) MergeBlock(index int, block Block) {
+func (htrm *HTRM) MergeBlock(block Block) {
 	// merge `times` times
 	for i := 0; i < htrm.times; i++ {
 		// each time, generate a random number from 0 to ValuePerTimes-1

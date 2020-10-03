@@ -37,7 +37,7 @@ func runHTRM() {
 
 	// Merge blocks
 	for i := 0; i < n; i++ {
-		htrm.MergeBlock(i, rdiabv.DefaultBlockGenerator())
+		htrm.MergeBlock(rdiabv.DefaultBlockGenerator())
 	}
 
 	// Check

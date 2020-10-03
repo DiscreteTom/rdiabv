@@ -75,7 +75,8 @@ func main(){
 	for i := 0; i < blockCount; i++ {
 		block := MyBlock{}
 		... // 构建数据块
-		validator.MergeBlock(i, &block)
+		validator.MergeBlock(i, &block) // 使用DHDD
+		// validator.MergeBlock(&block) // 使用HTRM
 	}
 
 	// 验证所有缓冲区中的数据域和标签域是否匹配
@@ -170,7 +171,8 @@ func main(){
 	for i := 0; i < blockCount; i++ {
 		block := MyBlock{}
 		... // construct your block
-		validator.MergeBlock(i, &block)
+		validator.MergeBlock(i, &block) // Using DHDD
+		// validator.MergeBlock(&block) // Using HTRM
 	}
 
 	// Check all buffers whether the data and tags are matched.
