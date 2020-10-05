@@ -1,38 +1,15 @@
 package main
 
-import (
-	"bufio"
-	"math/big"
-	"os"
-)
-
 // check every block
-func runOneByOne() bool {
-	// open files
-	dataFile, err := os.Open(dataFilename)
-	if err != nil {
-		panic(err)
-	}
-	tagFile, err := os.Open(tagFilename)
-	if err != nil {
-		panic(err)
-	}
-	scanner := bufio.NewScanner(tagFile)
-
-	// init read buffer for data file
-	dataBuffer := make([]byte, chunkSize)
+func runOneByOne(fm *FileManager) bool {
+	fm.StartSession()
+	defer fm.EndSession()
 
 	// check each block
-	for i := 0; i < blockCount; i++ {
-		// for data file, read a chunk
-		_, err := dataFile.Read(dataBuffer)
-		if err != nil {
-			panic(err)
-		}
-		var data = new(big.Int).SetBytes(dataBuffer)
-		scanner.Scan()
-		tagFromFile, _ := new(big.Int).SetString(scanner.Text(), 10)
-		if data.Cmp(rawRsa.RawDecrypt(tagFromFile)) != 0 {
+	for i := 0; i < fm.blockCount; i++ {
+		var data = fm.NextBlockData()
+		var tag = fm.NextBlockTag()
+		if data.Cmp(fm.rr.RawDecrypt(tag)) != 0 {
 			return false
 		}
 	}

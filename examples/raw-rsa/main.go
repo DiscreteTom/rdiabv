@@ -1,36 +1,36 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
 	"time"
-
-	"github.com/DiscreteTom/rawrsa"
 )
 
-const rsaKeyBits = 4096
-const chunkSize = 256 // Byte count of a block's data field.
-const blockCount = 1024
-const dataFilename = "data.bin"
-const tagFilename = "tag.txt"
-
-var rawRsa, _ = rawrsa.NewRawRsa(rand.Reader, rsaKeyBits)
-
 func main() {
-	// generate test data
+	const rsaKeyBits = 4096
+	const chunkSize = 256 // Byte count of a block's data field.
+	const blockCount = 1024
+	const dataFilename = "data.bin"
+	const tagFilename = "tag.txt"
+	const keyFilename = "key.pem"
+
+	// generate key files and test data
 	fmt.Println("Generating files...")
-	fileGen(dataFilename, tagFilename, chunkSize, blockCount)
+	fm := NewFiles(keyFilename, rsaKeyBits, dataFilename, tagFilename, chunkSize, blockCount)
+
+	// or you can load existing files
+	// fmt.Println("Using existing files.")
+	// fm := LoadFiles(keyFilename, dataFilename, tagFilename, chunkSize, blockCount)
 
 	// performance test
-	trackDuration("DHDD", runDHDD)
-	trackDuration("HTRM", runHTRM)
-	trackDuration("One by one", runOneByOne)
+	trackDuration("DHDD", runDHDD, fm)
+	trackDuration("HTRM", runHTRM, fm)
+	trackDuration("One by one", runOneByOne, fm)
 }
 
 // call f and track duration
-func trackDuration(name string, f func() bool) {
+func trackDuration(name string, f func(*FileManager) bool, fm *FileManager) {
 	fmt.Println("Running " + name + ":")
 	start := time.Now()
-	fmt.Printf("Result: %v\n", f())
+	fmt.Printf("Result: %v\n", f(fm))
 	fmt.Printf("%v: %v\n", name, time.Since(start))
 }
