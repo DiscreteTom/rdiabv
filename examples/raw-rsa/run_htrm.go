@@ -6,7 +6,7 @@ import (
 	"github.com/DiscreteTom/rdiabv"
 )
 
-const timesForHTRM = 10
+const timesForHTRM = 15
 
 func runHTRM(fm *FileManager) bool {
 	fm.StartSession()
