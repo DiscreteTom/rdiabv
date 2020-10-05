@@ -32,7 +32,7 @@ func runOneByOne() bool {
 		var data = new(big.Int).SetBytes(dataBuffer)
 		scanner.Scan()
 		tagFromFile, _ := new(big.Int).SetString(scanner.Text(), 10)
-		if data.Cmp(rawRsa.Decrypt(tagFromFile)) != 0 {
+		if data.Cmp(rawRsa.RawDecrypt(tagFromFile)) != 0 {
 			return false
 		}
 	}

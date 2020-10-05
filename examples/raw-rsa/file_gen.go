@@ -30,7 +30,7 @@ func fileGen(dataFilename, tagFilename string, chunkSize, blockCount int) {
 			panic(err)
 		}
 		// each line in tag file is a tag
-		if _, err = tagFile.WriteString(rawRsa.Encrypt(new(big.Int).SetBytes(data)).String() + "\n"); err != nil {
+		if _, err = tagFile.WriteString(rawRsa.RawEncrypt(new(big.Int).SetBytes(data)).String() + "\n"); err != nil {
 			panic(err)
 		}
 	}

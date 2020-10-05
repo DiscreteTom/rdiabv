@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	"time"
+
+	"github.com/DiscreteTom/rawrsa"
 )
 
 const rsaKeyBits = 4096
@@ -12,7 +14,7 @@ const blockCount = 1024
 const dataFilename = "data.bin"
 const tagFilename = "tag.txt"
 
-var rawRsa = NewRawRsa(rand.Reader, rsaKeyBits)
+var rawRsa, _ = rawrsa.NewRawRsa(rand.Reader, rsaKeyBits)
 
 func main() {
 	// generate test data
