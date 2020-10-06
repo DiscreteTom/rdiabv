@@ -96,7 +96,7 @@ DHDD和HTRM天然支持并发。`InitBuffers`和`CheckAllBuffers`显然是支持
 
 ## 性能
 
-使用教科书RSA算法进行测试（源码位于`examples/raw-rsa`），RSA密钥长度4096 bit，数据块大小256 Byte，使用`go run`命令进行测试，参考性能如下：
+使用教科书RSA算法进行测试（源码位于`examples/raw-rsa`），RSA密钥长度4096 bit，数据块大小256 Byte，使用`go run`命令进行测试，参考性能如下（由于随机生成数据不同，建议仅关注耗时之间的差距而不是具体数值）：
 
 | 数据块数量 | 数据文件大小 | 逐个验证耗时 | DHDD耗时（非并发/并发） | DHDD维度 | HTRM耗时（非并发/并发） | HTRM次数 |
 | --- |--- | --- | --- | --- | --- | --- |
@@ -107,6 +107,8 @@ DHDD和HTRM天然支持并发。`InitBuffers`和`CheckAllBuffers`显然是支持
 > 令DHDD维度为`x`，则DHDD防御失败的概率约为`(5/27)**x`。维度为10时，DHDD防御失败的概率约等于中国国内中奖概率最低的大乐透中奖（约1/21420000）。
 
 > 令HTRM次数为`n`，则HTRM防御失败的概率为`1/3**n`。次数为15时，HTRM防御失败的概率约为1/14350000。
+
+> 如果需要测试检错性能，只需要修改测试生成的`examples/raw-rsa/tag.txt`文件，然后修改`examples/raw-rsa/main.go`，使用已有文件而不是创建新文件即可。
 
 # English
 
@@ -202,7 +204,7 @@ The number of goroutines are the dimension of DHDD and the times of HTRM when us
 
 ## Performance
 
-Using textbook RSA as the test algorithm(the source code is available in `examples/raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows:
+Using textbook RSA as the test algorithm(the source code is available in `examples/raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows(since each test will generate different data, we should focus on the differences of time consumption between all tests instead of the value of time consumptions):
 
 | Block Count | File Size | Time Consumption of Check One by One | Time Consumption of DHDD(Non-Parallel/Parallel) | Dimension of DHDD | Time Consumption of HTRM(Non-Parallel/Parallel) | HTRM Times |
 | --- |--- | --- | --- | --- | --- | --- |
@@ -213,3 +215,5 @@ Using textbook RSA as the test algorithm(the source code is available in `exampl
 > Assume that the dimension of DHDD is `x`, then the probability of DHDD failed to detect the complementation attack is about `(5/27)**x`. If `x == 10`, this probability is about `1/21420000`.
 
 > Assume that the times of HTRM is `n`, then the probability of HTRM failed to detect the complementation attack is `1/3**n`. If `n == 15`, this probability is about `1/14350000`.
+
+> If you want to test the ability of error detection, just modify the generated `examples/raw-rsa/tag.txt`, the modify `examples/raw-rsa/main.go` to use existing files instead creating new ones, then re-run the test.
