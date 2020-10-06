@@ -53,6 +53,8 @@ func NewFiles(keyFilename string, rsaKeyBits int, dataFilename, tagFilename stri
 		panic(err)
 	}
 	defer tagFile.Close()
+	dataFile.Truncate(0) // clear file
+	tagFile.Truncate(0)  // clear file
 
 	// write files
 	data := make([]byte, chunkSize)
