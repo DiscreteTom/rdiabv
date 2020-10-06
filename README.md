@@ -84,17 +84,27 @@ func main(){
 }
 ```
 
+## 并发
+
+DHDD和HTRM天然支持并发。`InitBuffers`和`CheckAllBuffers`显然是支持并发的，毕竟他们处理的是毫不相关的各个缓冲区。`MergeBlock`阶段，DHDD会操作位于不同维度的缓冲区，HTRM会操作不同次的缓冲区，所以一次`MergeBlock`调用中完全不涉及同时对一个相同缓冲区的写操作，因此单次`MergeBlock`在执行时，其内部是可以并行进行的。
+
+因此，此项目在库的层面就支持并发（这也是此项目使用go语言进行编写的原因），使用`ParallelInitBuffers`/`ParallelMergeBlock`/`ParallelCheckAllBuffers`替换`InitBuffers`/`MergeBlock`/`CheckAllBuffers`即可使用并发操作。当然，并发与非并发API可以混合使用。
+
+因为是库级别的并发，所以`ParallelXXX`内部会使用多个goroutine进行处理。而如果使用多个goroutine同时调用API（比如多个goroutine同时调用`MergeBlock`），才可能导致程序逻辑错误。当然，如果`MyBlock`被良好地设计，这些逻辑错误也可以被避免（比如`MyBlock`包含一个锁，`Merge`方法会检查这个锁）。
+
+使用`ParallelXXX`时，goroutine的数量为DHDD的维度/HTRM的次数。
+
 ## 性能
 
 使用教科书RSA算法进行测试（源码位于`examples/raw-rsa`），RSA密钥长度4096 bit，数据块大小256 Byte，使用`go run`命令进行测试，参考性能如下：
 
-| 数据块数量 | 逐个验证耗时 | DHDD耗时 | DHDD维度 | HTRM耗时 | HTRM次数 |
-| --- | --- | --- | --- | --- | --- |
-| 1024 | 44.4 s | 977 ms | 7 | 2.7 s | 15 |
-| 10000 | 7 m 10 s | 4.5 s | 9 | 6.8 s | 15 |
-| 59049 | 42 m 3 s | 21.2 s | 10 | 29.3 s | 15 |
+| 数据块数量 | 数据文件大小 | 逐个验证耗时 | DHDD耗时（非并发/并发） | DHDD维度 | HTRM耗时（非并发/并发） | HTRM次数 |
+| --- |--- | --- | --- | --- | --- | --- |
+| 1024 | 256 KiB | 30.30 s | 569.66 ms/224.0 ms | 7 | 1.54 s/420.84 ms | 15 |
+| 10000 | 2500 KiB | 5 m 30 s | 3.16 s/1.46 s | 9 | 4.79 s/2.50 s | 15 |
+| 59049 | 14.4 MiB | 27 m 11 s | 20.15 s/7.98 s | 10 | 22.44 s/9.72 s | 15 |
 
-> 令DHDD维度为`x`，则DHDD防御失败的概率为`(5/27)**x`。维度为10时，DHDD防御失败的概率约等于中国国内中奖概率最低的大乐透中奖（约1/21420000）。
+> 令DHDD维度为`x`，则DHDD防御失败的概率约为`(5/27)**x`。维度为10时，DHDD防御失败的概率约等于中国国内中奖概率最低的大乐透中奖（约1/21420000）。
 
 > 令HTRM次数为`n`，则HTRM防御失败的概率为`1/3**n`。次数为15时，HTRM防御失败的概率约为1/14350000。
 
@@ -180,16 +190,26 @@ func main(){
 }
 ```
 
+## Parallelism
+
+DHDD & HTRM are born to support parallelism. `InitBuffers` & `CheckAllBuffers` are processing different buffers so these two methods can be implemented in parallel. In `MergeBlock` stage, DHDD will process buffers in different dimension, and HTRM will process buffers in different time, so there will be no possibility to write to a same buffer many times in one `MergeBlock` call. So `MergeBlock` can be implemented in parallel too.
+
+Therefore, this project supports parallel processing(and that's why this project is written with Golang). You can just replace `InitBuffers`/`MergeBlock`/`CheckAllBuffers` with `ParallelInitBuffers`/`ParallelMergeBlock`/`ParallelCheckAllBuffers` to use parallel processing. You can also mix parallel APIs and non-parallel APIs.
+
+There will be many goroutines in one `ParallelXXX` call. If you use many goroutines to call APIs in parallel(for example, use many goroutines to call `MergeBlock` simultaneously), there might be some logical problems. You can design your `MyBlock` properly to avoid these problems of course(for example, add a lock to the `MyBlock` structure and check this lock in `Merge` method).
+
+The number of goroutines are the dimension of DHDD and the times of HTRM when using parallel APIs.
+
 ## Performance
 
 Using textbook RSA as the test algorithm(the source code is available in `examples/raw-rsa`), with 4096 bits RSA key pair, each block contains 256 bytes data, using `go run` command to test. The results are as follows:
 
-| Block Count | Time Consumption of Check One by One | Time Consumption of DHDD | Dimension of DHDD | Time Consumption of HTRM | HTRM Times |
-| --- | --- | --- | --- | --- | --- |
-| 1024 | 44.4 s | 977 ms | 7 | 2.7 s | 15 |
-| 10000 | 7 m 10 s | 4.5 s | 9 | 6.8 s | 15 |
-| 59049 | 42 m 3 s | 21.2 s | 10 | 29.3 s | 15 |
+| Block Count | File Size | Time Consumption of Check One by One | Time Consumption of DHDD(Non-Parallel/Parallel) | Dimension of DHDD | Time Consumption of HTRM(Non-Parallel/Parallel) | HTRM Times |
+| --- |--- | --- | --- | --- | --- | --- |
+| 1024 | 256 KiB | 30.30 s | 569.66 ms/224.0 ms | 7 | 1.54 s/420.84 ms | 15 |
+| 10000 | 2500 KiB | 5 m 30 s | 3.16 s/1.46 s | 9 | 4.79 s/2.50 s | 15 |
+| 59049 | 14.4 MiB | 27 m 11 s | 20.15 s/7.98 s | 10 | 22.44 s/9.72 s | 15 |
 
-> Assume that the dimension of DHDD is `x`, then the probability of DHDD failed to detect the complementation attack is `(5/27)**x`. If `x == 10`, this probability is about `1/21420000`.
+> Assume that the dimension of DHDD is `x`, then the probability of DHDD failed to detect the complementation attack is about `(5/27)**x`. If `x == 10`, this probability is about `1/21420000`.
 
 > Assume that the times of HTRM is `n`, then the probability of HTRM failed to detect the complementation attack is `1/3**n`. If `n == 15`, this probability is about `1/14350000`.
